@@ -15,7 +15,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-logo">ECG</div>
+        <div class="brand-logo"><img src="../../assets/img/logo.png" alt="Cardihoop Logo" /></div>
         <div class="brand-text">
           <div class="brand-title">Cardihoop</div>
           <div class="brand-subtitle">Cloud-Based ECG Monitoring System</div>
