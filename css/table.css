@@ -1,0 +1,62 @@
+/* ================================
+   DATATABLES – RESPONSIVE SCROLL
+   ================================ */
+
+.table-wrap{
+  width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* DataTables wrappers */
+.dataTables_wrapper,
+.dataTables_scroll,
+.dataTables_scrollHead,
+.dataTables_scrollBody{
+  width: 100% !important;
+  min-width: 0;
+}
+
+/* The actual scrolling container */
+.dataTables_scrollBody{
+  overflow-x: auto !important;
+  overflow-y: auto !important;
+}
+
+/* Prevent wrapping so horizontal scroll is meaningful */
+table.dataTable thead th,
+table.dataTable tbody td{
+  white-space: nowrap !important;
+  text-align: left !important;
+  vertical-align: middle;
+}
+
+/* Let DataTables calculate width naturally */
+table.dataTable{
+  width: 100% !important;
+  table-layout: auto;
+}
+
+/* Optional: give columns a sensible minimum */
+table.dataTable thead th{
+  min-width: 120px;
+}
+
+/* Theme */
+table.dataTable thead th{
+  background: #f8fafc !important;
+  color: var(--muted) !important;
+  font-weight: 800 !important;
+  font-size: 12px !important;
+  border-bottom: 1px solid var(--border) !important;
+}
+
+table.dataTable tbody td{
+  border-top: 1px solid var(--border) !important;
+  padding: 12px 14px !important;
+}
+
+table.dataTable tbody tr:hover{
+  background: #f8fafc !important;
+}

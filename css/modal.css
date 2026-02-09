@@ -1,0 +1,231 @@
+/* ================================
+   MODAL (Designed)
+   ================================ */
+
+.modal{
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+
+  z-index: 9999;
+  transition: opacity .15s ease, visibility .15s ease;
+}
+
+.modal.show{
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.modal-backdrop{
+  position: absolute;
+  inset: 0;
+  background: rgba(2, 6, 23, 0.55);
+  backdrop-filter: blur(4px);
+}
+
+.modal-card{
+  position: relative;
+  z-index: 1;
+  width: min(920px, calc(100% - 28px));
+  max-height: calc(100vh - 28px);
+  overflow: auto;
+
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  box-shadow: 0 30px 90px rgba(2, 6, 23, 0.35);
+
+  padding: 16px;
+}
+
+.modal-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 6px 12px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-title{
+  font-weight: 900;
+  font-size: 16px;
+}
+
+.icon-btn{
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  display:grid;
+  place-items:center;
+  font-weight: 900;
+}
+
+.icon-btn:hover{ filter: brightness(0.98); }
+
+.form{ padding: 12px 6px 4px; }
+
+.form-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.field-full{ grid-column: 1 / -1; }
+
+.field label{
+  display:flex;
+  align-items:center;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.req{
+  color: var(--danger);
+  font-weight: 900;
+}
+
+.field input,
+.field select{
+  width: 100%;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  background: #fff;
+  font-size: 13px;
+  outline: none;
+  box-shadow: 0 2px 10px rgba(2,6,23,0.03);
+}
+
+.field input:focus,
+.field select:focus{
+  border-color: #bcd3ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+.modal-actions{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.modal-actions-right{
+  display:flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* Responsive modal form */
+@media (max-width: 700px){
+  .form-grid{ grid-template-columns: 1fr; }
+}
+
+
+/* Small result modal */
+.modal-card-sm{
+  width: min(520px, calc(100% - 28px));
+}
+
+.result-head{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+}
+
+.result-icon{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  display:grid;
+  place-items:center;
+  font-weight: 900;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.result-icon.success{
+  background: var(--success-soft);
+  color: var(--success);
+  border-color: #c8efd6;
+}
+
+.result-icon.error{
+  background: var(--danger-soft);
+  color: var(--danger);
+  border-color: #ffd0d0;
+}
+
+/* ================================
+   SCAN MODAL CONTENT (matches theme)
+   ================================ */
+
+.scan-body{
+  padding: 14px 6px 6px;
+}
+
+.scan-row{
+  display:flex;
+  align-items:center;
+  gap: 12px;
+  border: 1px solid var(--border);
+  background: #fbfdff;
+  border-radius: 14px;
+  padding: 12px;
+}
+
+/* spinner */
+.scan-spinner{
+  width: 44px;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: var(--primary-soft);
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.scan-spinner::after{
+  content:"";
+  position:absolute;
+  inset: 9px;
+  border-radius: 999px;
+  border: 3px solid rgba(37, 99, 235, 0.20);
+  border-top-color: rgba(37, 99, 235, 0.95);
+  animation: scanSpin 0.9s linear infinite;
+}
+
+@keyframes scanSpin{
+  to { transform: rotate(360deg); }
+}
+
+.scan-meta{
+  min-width: 0;
+}
+
+#scanStatusText{
+  letter-spacing: -0.2px;
+}
+
+#scanSubtitle{
+  margin-top: 4px;
+}
