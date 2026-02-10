@@ -44,7 +44,7 @@
         <!-- athlete_id -->
         <div class="field">
           <label>Athlete ID <span class="req">*</span></label>
-          <input name="athlete_id" type="text" placeholder="e.g., A-006" required maxlength="16" />
+          <input name="athlete_id" id="athlete_id" type="text" placeholder="e.g., A-006" required maxlength="16" />
         </div>
 
         <!-- name -->

@@ -1,6 +1,14 @@
 <!DOCTYPE html>
 <html lang="en">
 
+<?php
+session_start();
+if ($_SESSION['loggedin'] !== true) {
+  header("Location: ../../index.php");
+  exit();
+}
+?>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -15,7 +23,7 @@
     <!-- SIDEBAR -->
     <aside class="sidebar">
       <div class="brand">
-        <div class="brand-logo"><img src="../../assets/img/logo.png" alt="Cardihoop Logo" /></div>
+        <div class="brand-logo"><img src="../../assets/img/logo2.png" alt="Cardihoop Logo" /></div>
         <div class="brand-text">
           <div class="brand-title">Cardihoop</div>
           <div class="brand-subtitle">Cloud-Based ECG Monitoring System</div>
@@ -45,7 +53,7 @@
           </div>
         </div>
 
-        <button class="btn btn-danger" type="button">
+        <button class="btn btn-danger" type="button" onclick="window.location.href='../includes/logout.php'">
           <span class="btn-icon">⏻</span>
           <span>Logout</span>
         </button>

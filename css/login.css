@@ -1,0 +1,169 @@
+.login-header{
+  position: fixed;
+  top: 18px;
+  left: 18px;
+  z-index: 20;
+}
+
+/* container */
+.login-brand{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 10px 14px;
+}
+
+/* logo container */
+.login-logo{
+  width: 46px;
+  height: 46px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+}
+
+/* actual image */
+.login-logo img{
+  width: 120%;
+  height: 120%;
+  object-fit: contain;
+  display: block;
+}
+
+/* text block */
+.login-brand-text{
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  height: 120%;
+}
+
+.login-brand-title{
+  font-weight: 1000;
+  font-size: 25px;
+  letter-spacing: -0.2px;
+  color: var(--text);
+}
+
+.login-brand-subtitle{
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.container-center{
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 18px;
+}
+
+/* main card */
+.login-card{
+  width: min(440px, calc(100% - 24px));
+  background: rgba(255,255,255,0.92);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(6px);
+  padding: 18px;
+}
+
+/* title block */
+.login-title{
+  font-weight: 1000;
+  font-size: 18px;
+  letter-spacing: -0.3px;
+  margin-bottom: 12px;
+}
+
+/* subtle subtitle if you want later */
+.login-subtitle{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -6px;
+  margin-bottom: 14px;
+}
+
+/* form spacing */
+.login-form{
+  margin-top: 6px;
+}
+
+.login-field label{
+  display:block;
+  font-size: 12px;
+  color: var(--muted);
+  font-weight: 900;
+  margin: 10px 0 6px;
+}
+
+.login-field input{
+  width: 100%;
+  height: 44px;
+  border-radius: 14px;
+  border: 1px solid var(--border);
+  padding: 10px 12px;
+  background: #fff;
+  font-size: 13px;
+  outline: none;
+  box-shadow: 0 2px 10px rgba(2,6,23,0.03);
+}
+
+.login-field input:focus{
+  border-color: #bcd3ff;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+}
+
+/* login button (match .btn-primary feel) */
+.login-field button{
+  width: 100%;
+  height: 44px;
+  margin-top: 12px;
+  border-radius: 12px;
+  border: 1px solid var(--primary);
+  background: var(--primary);
+  color: #fff;
+  font-weight: 900;
+  cursor: pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap: 8px;
+}
+
+.login-field button:hover{
+  filter: brightness(0.98);
+}
+
+.login-field button:disabled{
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+/* tiny helpers */
+.mt-5{ margin-top: 10px; }
+.mt-10{ margin-top: 12px; }
+
+/* optional: small row for extra actions */
+.login-foot{
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed var(--border);
+  display:flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.login-link{
+  font-size: 12px;
+  font-weight: 900;
+  color: var(--primary);
+  text-decoration: none;
+}
+
+.login-link:hover{ text-decoration: underline; }
+

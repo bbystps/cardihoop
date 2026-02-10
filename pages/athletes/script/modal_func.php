@@ -1,4 +1,22 @@
 <script>
+  function setCreateMode() {
+    const $form = $("#registerForm");
+    $form.attr("action", "api/athlete_create.php");
+
+    // clear hidden primary key so backend won’t update
+    $("#athleteDbId").val("");
+
+    // optional: update modal title if you want
+    // $(".modal-title").text("Register Athlete");
+  }
+
+  function setEditMode(dbId) {
+    const $form = $("#registerForm");
+    $form.attr("action", "api/athlete_update.php");
+    $("#athleteDbId").val(dbId || "");
+    // optional: $(".modal-title").text("Edit Athlete");
+  }
+
   // REGISTER MODAL
   const modal = document.getElementById("registerModal");
   const openBtn = document.getElementById("openRegister");
@@ -31,7 +49,12 @@
     if (lastFocusEl) lastFocusEl.focus();
   }
 
-  openBtn.addEventListener("click", openModal);
+  openBtn.addEventListener("click", function() {
+    setCreateMode();
+    $("#registerForm")[0].reset(); // optional: clears any old values
+    openModal();
+  });
+
   closeBtn.addEventListener("click", closeModal);
   cancelBtn.addEventListener("click", closeModal);
   backdrop.addEventListener("click", closeModal);

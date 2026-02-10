@@ -28,6 +28,8 @@
           $status.text("Saved!");
           $form[0].reset();
 
+          setCreateMode();
+
           // close register modal
           closeModal();
 
@@ -39,7 +41,7 @@
           }
 
           // show success modal
-          openResultModal("success", "Athlete registered", "The athlete profile was saved successfully.");
+          openResultModal("success", "Operation successful", "The athlete profile was saved successfully.");
         },
         error: function(xhr) {
           // try to read JSON error if server returned one

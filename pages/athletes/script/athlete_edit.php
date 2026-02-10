@@ -23,7 +23,7 @@
       $("#profileResult").html('<span class="badge">—</span>');
       $("#profileActionText").text("Select an athlete to view details.");
 
-      $("#btnEditProfile").prop("disabled", true);
+      // $("#btnEditProfile").prop("disabled", true);
       $("#btnViewRecords").prop("disabled", true);
     }
 
@@ -50,68 +50,25 @@
 
       $("#profileActionText").text("You may edit profile or view records.");
 
-      $("#btnEditProfile").prop("disabled", false);
+      // $("#btnEditProfile").prop("disabled", false);
       $("#btnViewRecords").prop("disabled", false);
-    }
-
-    function loadAthleteAndUpdateUI(id) {
-      window.selectedAthleteId = id;
-
-      $.ajax({
-        type: "GET",
-        url: "api/athlete_get.php",
-        data: {
-          id
-        },
-        dataType: "json",
-        success: function(out) {
-          if (!out || out.ok !== true || !out.data) {
-            openResultModal("error", "Load failed", (out && out.error) ? out.error : "Failed to load athlete.");
-            return;
-          }
-          fillProfile(out.data);
-        },
-        error: function() {
-          openResultModal("error", "Server error", "Failed to load athlete profile.");
-        }
-      });
     }
 
     // Start empty
     setProfileEmpty();
 
-    // ----- ROW CLICK -----
-    $("#athletesTable tbody").on("click", "tr", function() {
-      // Use your global dt if you have it; else grab DataTable instance
-      const dt = window.athletesDt || $("#athletesTable").DataTable();
-
-      const row = dt.row(this).data();
-      if (!row) return;
-
-      // IMPORTANT:
-      // If your ajax returns array rows -> ID is row[0]
-      // If it returns object rows -> ID is row.id
-      const id = (typeof row === "object") ? (row.id || row.ID) : row[0];
-      const athleteId = parseInt(id, 10);
-
-      if (!athleteId) return;
-
-      // Highlight selected
-      $("#athletesTable tbody tr").removeClass("selected");
-      $(this).addClass("selected");
-
-      loadAthleteAndUpdateUI(athleteId);
-    });
-
     // ----- EDIT CLICK -----
     $("#btnEditProfile").on("click", function() {
-      if (!window.selectedAthleteId) return;
-
+      const dbId = this.dataset.dbId; // DB id from table row
+      if (!dbId) {
+        alert('No athlete selected.');
+        return;
+      }
       $.ajax({
         type: "GET",
         url: "api/athlete_get.php",
         data: {
-          id: window.selectedAthleteId
+          id: dbId
         },
         dataType: "json",
         success: function(out) {
@@ -122,13 +79,9 @@
 
           const a = out.data;
 
-          // Switch modal form to UPDATE endpoint
           const $form = $("#registerForm");
-          $form.attr("action", "api/athlete_update.php");
-
-          // Make sure your modal has this hidden input:
-          // <input type="hidden" name="id" id="athleteDbId">
-          $("#athleteDbId").val(a.id);
+          $form[0].reset();
+          setEditMode(a.id);
 
           // Fill form fields by "name"
           $form.find('[name="athlete_id"]').val(a.athlete_id);

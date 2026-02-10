@@ -26,7 +26,10 @@ html, body{ height:100%; }
 body{
   margin:0;
   font-family: var(--font);
-  background: var(--bg);
+  background-image: url("../assets/img/bg2.png");
+  background-repeat: no-repeat;     /* no tiling */
+  background-position: center;      /* center it */
+  background-size: 70% 110%;
   color: var(--text);
   overflow: hidden;             /* ✅ body does NOT scroll */
 }
@@ -81,16 +84,24 @@ body{
 }
 
 .brand-logo{
-  width: 44px;
+  width: 44px;              /* logo container size */
   height: 44px;
-  border-radius: 14px;
-  display:grid;
-  place-items:center;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+
   background: var(--primary-soft);
-  color: var(--primary);
-  font-weight: 800;
-  letter-spacing: 0.5px;
+  border: 1px solid #d6e6ff;
 }
+
+/* actual logo image */
+.brand-logo img{
+  width: 110%;               /* control logo size */
+  height: 110%;
+  object-fit: contain;      /* keep proportions */
+  display: block;
+}
+
 
 .brand-title{
   font-weight: 800;
@@ -782,6 +793,7 @@ body{
 
   body{
     overflow: auto;         /* allow normal scroll on mobile/tablet */
+    background-size: 100% 100%;
   }
 
   .app{

@@ -280,6 +280,15 @@
       const rowData = table.row($(this).closest('tr')).data();
       if (!rowData?.AthleteID) return;
 
+      // Store BOTH ids:
+      const editBtn = document.getElementById('btnEditProfile');
+      if (editBtn) {
+        editBtn.dataset.dbId = rowData.ID || ''; // DB primary key
+        editBtn.dataset.athleteId = rowData.AthleteID || ''; // public AthleteID
+      }
+
+      if (!rowData.AthleteID) return;
+
       loadProfileByAthleteId(rowData.AthleteID);
     });
 
