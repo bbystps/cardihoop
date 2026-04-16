@@ -4,7 +4,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cardihoop</title>
+  <title>Create Admin Account - Cardihoop</title>
 
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/login.css">
@@ -12,7 +12,7 @@
 </head>
 
 <body>
-  <!-- LOGIN HEADER -->
+  <!-- HEADER -->
   <header class="login-header">
     <div class="login-brand">
       <div class="login-logo">
@@ -30,21 +30,31 @@
   <div class="container-center">
     <div class="login-card">
       <div class="login-title">
-        Please Login to Your Account
+        Create Admin Account
       </div>
+      <div class="login-subtitle">
+        Add a new administrator account for system access.
+      </div>
+
       <div class="login-form">
-        <form id="loginform" enctype="multipart/form-data">
+        <form id="createAdminForm" enctype="multipart/form-data">
           <div class="login-field">
-            <label for="username">Username</label>
-            <input autocomplete="false" type="text" name="username" id="username" required>
-            <label class="mt-5" for="password">Password</label>
-            <input type="password" name="password" id="password" required>
-            <button id="login_button" class="mt-10">Login</button>
+            <label for="admin_username">Username</label>
+            <input type="text" name="username" id="admin_username" autocomplete="off" required>
+
+            <label class="mt-5" for="admin_password">Password</label>
+            <input type="password" name="password" id="admin_password" required>
+
+            <label class="mt-5" for="admin_confirm_password">Confirm Password</label>
+            <input type="password" name="confirm_password" id="admin_confirm_password" required>
+
+            <button id="create_admin_button" class="mt-10" type="submit">Create Admin Account</button>
           </div>
         </form>
       </div>
+
       <div class="login-foot">
-        <a href="create_admin.php" class="login-link">Create Admin Account</a>
+        <a href="index.php" class="login-link">Back to Login</a>
       </div>
     </div>
   </div>
@@ -71,7 +81,6 @@
   function openLoginModal(type, headline, text, hint) {
     lastFocusEl = document.activeElement;
 
-    // reset classes
     iconEl.classList.remove("success", "error");
     iconEl.classList.add(type === "success" ? "success" : "error");
 
@@ -97,21 +106,35 @@
   okLoginModalBtn.addEventListener("click", closeLoginModal);
   loginBackdrop.addEventListener("click", closeLoginModal);
 
-  // ===== Login AJAX =====
-  $("#login_button").click(function(e) {
+  // ===== Create Admin AJAX =====
+  $("#createAdminForm").on("submit", function(e) {
     e.preventDefault();
 
-    const btn = document.getElementById("login_button");
-    btn.disabled = true;
-    btn.textContent = "Logging in...";
+    const username = $("#admin_username").val().trim();
+    const password = $("#admin_password").val();
+    const confirmPassword = $("#admin_confirm_password").val();
+    const btn = document.getElementById("create_admin_button");
 
-    const form = $('#loginform')[0];
+    if (username === "" || password === "" || confirmPassword === "") {
+      openLoginModal("error", "Missing Fields", "Please complete all required fields.", "");
+      return false;
+    }
+
+    if (password !== confirmPassword) {
+      openLoginModal("error", "Password Mismatch", "Password and confirm password do not match.", "");
+      return false;
+    }
+
+    btn.disabled = true;
+    btn.textContent = "Creating...";
+
+    const form = $('#createAdminForm')[0];
     const data = new FormData(form);
 
     $.ajax({
       type: "POST",
       enctype: 'multipart/form-data',
-      url: "login/authenticate.php",
+      url: "login/create_admin.php",
       data: data,
       processData: false,
       contentType: false,
@@ -125,27 +148,35 @@
             "error",
             "Unexpected Response",
             "Server did not return valid JSON.",
-            "Check authenticate.php output (no extra echo/HTML)."
+            "Check create_admin.php output."
           );
           return;
         }
 
-        const loginState = (json.login || "").toUpperCase();
+        const createState = (json.status || "").toUpperCase();
 
-        if (loginState === "SUCCESS") {
-          openLoginModal("success", "Login Successful", "Redirecting to dashboard…", "");
-          setTimeout(() => {
-            window.location.href = "pages/dashboard/index.php";
-          }, 600);
-        } else if (loginState === "EMPTY FIELD") {
+        if (createState === "SUCCESS") {
+          openLoginModal(
+            "success",
+            "Admin Created",
+            "New admin account has been created successfully.",
+            ""
+          );
+
+          document.getElementById("createAdminForm").reset();
+
+        } else if (createState === "EMPTY FIELD") {
           openLoginModal("error", "Missing Fields", "Please enter username and password.", "");
-        } else if (loginState === "NO USER") {
-          openLoginModal("error", "User Not Found", "No account matches that username.", "Double-check your username.");
-        } else if (loginState === "FAIL") {
-          openLoginModal("error", "Invalid Password", "Incorrect password. Please try again.", "");
+        } else if (createState === "USER EXISTS") {
+          openLoginModal("error", "Username Exists", "That username is already taken.", "Please choose a different username.");
+        } else if (createState === "FAIL") {
+          openLoginModal("error", "Creation Failed", "Unable to create admin account.", "");
+        } else if (createState === "PASSWORD MISMATCH") {
+          openLoginModal("error", "Password Mismatch", "Password and confirm password do not match.", "");
         } else {
-          openLoginModal("error", "Login Failed", "Unknown status returned: " + loginState, "");
+          openLoginModal("error", "Unknown Response", "Server returned: " + createState, "");
         }
+
       },
       error: function(xhr) {
         openLoginModal(
@@ -157,7 +188,7 @@
       },
       complete: function() {
         btn.disabled = false;
-        btn.textContent = "Login";
+        btn.textContent = "Create Admin Account";
       }
     });
 

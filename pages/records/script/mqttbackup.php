@@ -23,6 +23,7 @@
         userName: 'mqttuser',
         password: 'mqttpass',
         onSuccess: function() {
+            // Subscribe to BOTH request and result topics
             client.subscribe('Cardihoop/EcgScan', {
                 qos: 0
             });
@@ -46,6 +47,7 @@
         }
     };
 
+    // helper publish if needed
     function publish(payload, topic, qos) {
         var message = new Messaging.Message(payload);
         message.destinationName = topic;
@@ -53,7 +55,8 @@
         client.send(message);
     }
 
-    window.lastScanResult = null;
+    // ---- NEW: ScanResult handler hook ----
+    window.lastScanResult = null; // for debugging / reuse
 
     client.onMessageArrived = function(message) {
         var topic = message.destinationName;
@@ -61,11 +64,13 @@
         console.log("MQTT RX:", topic, x);
 
         if (topic === "Cardihoop/ScanResult") {
+            console.log("Received ScanResult:", x);
             try {
-                var obj = JSON.parse(x);
-                window.lastScanResult = obj;
+                var obj = JSON.parse(x); // ✅ parse JSON
+                window.lastScanResult = obj; // ✅ store for debugging
                 console.log("Parsed ScanResult:", obj);
 
+                // ✅ populate + open modal
                 populateSaveRecordModalFromScanResult(obj);
 
             } catch (e) {
@@ -78,5 +83,6 @@
             }
             return;
         }
+
     };
 </script>

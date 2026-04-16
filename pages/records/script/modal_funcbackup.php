@@ -1,3 +1,7 @@
+<!-- =========================================================
+     FULL JS (SCAN MODAL + SAVE RECORD MODAL + DELETE ON CANCEL)
+     ========================================================= -->
+
 <script>
   // ===============================
   // SCAN MODAL
@@ -17,6 +21,7 @@
   let scanTimerHandle = null;
   let scanStartMs = 0;
 
+  // init inert
   scanModal.inert = true;
 
   function mqttSend(topic, payload) {
@@ -42,9 +47,11 @@
 
   function openScanModal() {
     lastFocusElScan = document.activeElement;
+
     scanModal.classList.add("show");
     scanModal.inert = false;
     scanModal.setAttribute("aria-hidden", "false");
+
     scanCloseBtn.focus();
   }
 
@@ -52,13 +59,14 @@
     scanModal.classList.remove("show");
     scanModal.inert = true;
     scanModal.setAttribute("aria-hidden", "true");
+
     if (lastFocusElScan) lastFocusElScan.focus();
   }
 
   function beginScan() {
     scanActive = true;
 
-    scanCloseBtn.disabled = true;
+    scanCloseBtn.disabled = true; // locked while scanning
     scanCancelBtn.disabled = false;
 
     scanStatusText.textContent = "Scanning in progress…";
@@ -67,6 +75,7 @@
     openScanModal();
     startScanTimer();
 
+    // request scan
     mqttSend("Cardihoop/EcgScan", "Requesting new ECG scan");
   }
 
@@ -87,17 +96,21 @@
     setTimeout(() => closeScanModal(), 600);
   }
 
+  // events
   scanOpenBtn.addEventListener("click", beginScan);
   scanCancelBtn.addEventListener("click", cancelScan);
 
+  // backdrop click: only close if not active
   scanBackdrop.addEventListener("click", () => {
     if (!scanActive) closeScanModal();
   });
 
+  // close button: only close if not active
   scanCloseBtn.addEventListener("click", () => {
     if (!scanActive) closeScanModal();
   });
 
+  // ESC: only close if not active
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && scanModal.classList.contains("show")) {
       if (!scanActive) closeScanModal();
@@ -116,42 +129,41 @@
 
   let lastFocusElSave = null;
 
+  // init inert
   saveRecordModal.inert = true;
 
+  // global flags
   window.lastScanResult = null;
   window.lastScanSaved = false;
 
   function endAndCloseScanModal() {
     stopScanTimer();
+
     scanActive = false;
+
     scanCancelBtn.disabled = true;
     scanCloseBtn.disabled = false;
+
     scanStatusText.textContent = "Scan completed";
     scanHintText.textContent = "Preparing result…";
+
     closeScanModal();
   }
 
   function openSaveRecordModal(data = null) {
     lastFocusElSave = document.activeElement;
 
+    // Only populate if data is explicitly provided
     if (data !== null) {
       document.getElementById("srRecordId").textContent = data.record_id || "-";
-      document.getElementById("srLabel").textContent = data.final_label || "-";
+      document.getElementById("srLabel").textContent = data.label || "-";
       document.getElementById("srConfidence").textContent =
-        (typeof data.ml_confidence === "number") ? (data.ml_confidence * 100).toFixed(2) + "%" : "-";
+        (typeof data.confidence === "number") ? (data.confidence * 100).toFixed(2) + "%" : "-";
       document.getElementById("srSavedPath").textContent =
         data.saved_path ? "Saved file: " + data.saved_path : "";
-
-      const srHeartRate = document.getElementById("srHeartRate");
-      const srRhythmLabel = document.getElementById("srRhythmLabel");
-      const srRateLabel = document.getElementById("srRateLabel");
-
-      if (srHeartRate) srHeartRate.textContent = data.heart_rate_bpm ?? "-";
-      if (srRhythmLabel) srRhythmLabel.textContent = data.rhythm_label || "-";
-      if (srRateLabel) srRateLabel.textContent = data.rate_label || "-";
-
       loadAthletesForSaveModal(data?.athlete_id || "");
     } else {
+      // still load athletes if you want fresh list every open
       loadAthletesForSaveModal("");
     }
 
@@ -169,9 +181,14 @@
     if (lastFocusElSave) lastFocusElSave.focus();
   }
 
+  // ===============================
+  // DELETE JSON WHEN USER CANCELS SAVE
+  // ===============================
   function deleteLastScanFileIfNotSaved() {
     const p = window.lastScanResult?.saved_path;
     if (!p) return;
+
+    // If already saved to DB, do not delete
     if (window.lastScanSaved) return;
 
     $.ajax({
@@ -192,6 +209,7 @@
         toastr.warning("Server error while deleting scan file.");
       },
       complete: function() {
+        // Clear local references so we don't delete twice
         window.lastScanResult = null;
         window.lastScanSaved = false;
       }
@@ -203,6 +221,9 @@
     deleteLastScanFileIfNotSaved();
   }
 
+  // ===============================
+  // EVENTS (REPLACED to include delete)
+  // ===============================
   saveRecordCloseBtn.addEventListener("click", cancelSaveRecordAndDeleteFile);
   saveRecordCancelBtn.addEventListener("click", cancelSaveRecordAndDeleteFile);
   saveRecordBackdrop.addEventListener("click", cancelSaveRecordAndDeleteFile);
@@ -221,7 +242,7 @@
   function recordIdFromSavedPath(saved_path) {
     if (!saved_path) return "-";
     const filename = String(saved_path).replace(/^ecg_out\//, "");
-    return filename;
+    return filename; // display only
   }
 
   function numericRecordId(saved_path) {
@@ -231,40 +252,29 @@
     return numeric ? parseInt(numeric, 10) : null;
   }
 
-  function normalizeStatus(final_label) {
-    const x = String(final_label || "").trim().toUpperCase();
-    return x === "ABNORMAL" ? "ABNORMAL" : "NORMAL";
-  }
-
   function populateSaveRecordModalFromScanResult(payload) {
     const rid = numericRecordId(payload.saved_path);
 
     document.getElementById("srRecordId").textContent = (rid !== null) ? String(rid) : "-";
-    document.getElementById("srLabel").textContent = payload.final_label || "-";
+    document.getElementById("srLabel").textContent = payload.label || "-";
     document.getElementById("srConfidence").textContent =
-      typeof payload.ml_confidence === "number" ? (payload.ml_confidence * 100).toFixed(2) + "%" : "-";
+      typeof payload.confidence === "number" ? (payload.confidence * 100).toFixed(2) + "%" : "-";
     document.getElementById("srSavedPath").textContent =
       payload.saved_path ? "Saved file: " + payload.saved_path : "";
 
-    const srHeartRate = document.getElementById("srHeartRate");
-    const srRhythmLabel = document.getElementById("srRhythmLabel");
-    const srRateLabel = document.getElementById("srRateLabel");
-
-    if (srHeartRate) srHeartRate.textContent = payload.heart_rate_bpm ?? "-";
-    if (srRhythmLabel) srRhythmLabel.textContent = payload.rhythm_label || "-";
-    if (srRateLabel) srRateLabel.textContent = payload.rate_label || "-";
-
-    payload.record_id = rid;
-    payload.status = normalizeStatus(payload.final_label);
-
+    // store for save/cancel flow
     window.lastScanResult = payload;
-    window.lastScanSaved = false;
+    window.lastScanSaved = false; // reset for new scan
 
+    // close scan modal first
     if (scanModal.classList.contains("show")) {
       endAndCloseScanModal();
     }
 
+    // open save record modal without overwriting fields
     openSaveRecordModal(null);
+
+    // load athletes
     loadAthletesForSaveModal("");
   }
 </script>
@@ -337,6 +347,11 @@
   const srSaveBtn = document.getElementById("srSaveBtn");
   const srAthleteSelectToSave = document.getElementById("srAthleteSelect");
 
+  function statusFromLabel(label) {
+    const x = String(label || "").toLowerCase();
+    return (x === "abnormal") ? "Abnormal" : "Normal";
+  }
+
   srSaveBtn.addEventListener("click", function() {
     if (!window.lastScanResult) {
       toastr.error("No scan result loaded.");
@@ -349,7 +364,9 @@
       return;
     }
 
-    const record_id = window.lastScanResult.record_id;
+    const record_id = numericRecordId(window.lastScanResult.saved_path);
+    const status = statusFromLabel(window.lastScanResult.label);
+
     if (!record_id) {
       toastr.error("Invalid record ID.");
       return;
@@ -365,18 +382,17 @@
       data: {
         record_id: record_id,
         athlete_id: athlete_id,
-        heart_rate: window.lastScanResult.heart_rate_bpm ?? "",
-        rate_label: window.lastScanResult.rate_label ?? "",
-        rhythm_label: window.lastScanResult.rhythm_label ?? "",
-        status: window.lastScanResult.status ?? "NORMAL"
+        status: status
       },
       success: function(res) {
         if (res && res.ok) {
-          window.lastScanSaved = true;
+          window.lastScanSaved = true; // ✅ prevent deletion on cancel
           toastr.success("Record saved successfully.");
 
           closeSaveRecordModal();
           reloadScanRecordsTable();
+
+          // optional: clear scan result after saving
           window.lastScanResult = null;
         } else {
           toastr.error(res?.error || "Save failed.");

@@ -109,8 +109,8 @@
     </div>
 
     <div class="profile-actions">
-      <button class="btn btn-primary" type="button" id="btnViewRecords" disabled>View Records</button>
-      <button class="btn btn-ghost" type="button" id="btnEditProfile" disabled>Edit Profile</button>
+      <!-- <button class="btn btn-primary" type="button" id="btnViewRecords" disabled>View Records</button> -->
+      <button class="btn btn-ghost" type="button" id="btnEditProfile">Edit Profile</button>
     </div>
   </div>
 

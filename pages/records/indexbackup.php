@@ -209,9 +209,6 @@ if ($_SESSION['loggedin'] !== true) {
                   <th>Athlete ID</th>
                   <th>Athlete Name</th>
                   <th>Time</th>
-                  <th>Heart Rate (bpm)</th>
-                  <th>Rate label</th>
-                  <th>Rhythm Label</th>
                   <th>Status</th>
                 </tr>
               </thead>
@@ -361,6 +358,115 @@ if ($_SESSION['loggedin'] !== true) {
       segmentIndex: 0
     };
 
+    function estimateHeartRateBpm(samples, fs) {
+      if (!samples || samples.length < fs * 2) return {
+        bpm: null,
+        peaks: []
+      };
+
+      const winHp = Math.max(1, Math.floor(fs * 0.6));
+      const hp = new Array(samples.length);
+      let sum = 0;
+
+      for (let i = 0; i < samples.length; i++) {
+        sum += samples[i];
+        if (i >= winHp) sum -= samples[i - winHp];
+        const mean = sum / Math.min(i + 1, winHp);
+        hp[i] = samples[i] - mean;
+      }
+
+      const winLp = Math.max(1, Math.floor(fs * 0.05));
+      const lp = new Array(hp.length);
+      sum = 0;
+
+      for (let i = 0; i < hp.length; i++) {
+        sum += hp[i];
+        if (i >= winLp) sum -= hp[i - winLp];
+        lp[i] = sum / Math.min(i + 1, winLp);
+      }
+
+      const energy = new Array(lp.length).fill(0);
+      for (let i = 1; i < lp.length; i++) {
+        const d = lp[i] - lp[i - 1];
+        energy[i] = d * d;
+      }
+
+      const winEnv = Math.max(1, Math.floor(fs * 0.12));
+      const env = new Array(energy.length);
+      sum = 0;
+
+      for (let i = 0; i < energy.length; i++) {
+        sum += energy[i];
+        if (i >= winEnv) sum -= energy[i - winEnv];
+        env[i] = sum / Math.min(i + 1, winEnv);
+      }
+
+      let meanEnv = 0;
+      for (const v of env) meanEnv += v;
+      meanEnv /= env.length;
+
+      let varEnv = 0;
+      for (const v of env) varEnv += (v - meanEnv) * (v - meanEnv);
+      varEnv /= env.length;
+
+      const stdEnv = Math.sqrt(varEnv);
+      const thresh = meanEnv + 2.0 * stdEnv;
+      const refractory = Math.floor(fs * 0.28);
+
+      const peaks = [];
+      let lastPeak = -refractory;
+
+      for (let i = 1; i < env.length - 1; i++) {
+        if (i - lastPeak < refractory) continue;
+
+        const isLocalMax = env[i] > env[i - 1] && env[i] >= env[i + 1];
+        if (!isLocalMax) continue;
+        if (env[i] < thresh) continue;
+
+        const refineWin = Math.floor(fs * 0.06);
+        let bestIdx = i;
+        let bestVal = -Infinity;
+        const start = Math.max(0, i - refineWin);
+        const end = Math.min(lp.length - 1, i + refineWin);
+
+        for (let j = start; j <= end; j++) {
+          if (lp[j] > bestVal) {
+            bestVal = lp[j];
+            bestIdx = j;
+          }
+        }
+
+        peaks.push(bestIdx);
+        lastPeak = bestIdx;
+      }
+
+      if (peaks.length < 2) return {
+        bpm: null,
+        peaks
+      };
+
+      const rr = [];
+      for (let i = 1; i < peaks.length; i++) {
+        rr.push((peaks[i] - peaks[i - 1]) / fs);
+      }
+
+      rr.sort((a, b) => a - b);
+      const mid = Math.floor(rr.length / 2);
+      const rrMed = rr.length % 2 ? rr[mid] : (rr[mid - 1] + rr[mid]) / 2;
+
+      if (!rrMed || rrMed <= 0) return {
+        bpm: null,
+        peaks
+      };
+
+      const bpm = 60 / rrMed;
+      const bpmClamped = Math.round(Math.max(30, Math.min(220, bpm)));
+
+      return {
+        bpm: bpmClamped,
+        peaks
+      };
+    }
 
     function drawEcgPaperGrid(ctx, w, h, pxPerMm, opts = {}) {
       const minor = 1 * pxPerMm;
@@ -671,11 +777,12 @@ if ($_SESSION['loggedin'] !== true) {
     async function loadAndPlotRecord(recordId, rowMeta = null) {
       const url = `${ECG_OUT_DIR}/${encodeURIComponent(recordId)}.json`;
 
-      // Reset canvases
       drawWaveformOnCanvas('waveCanvas', [0, 1], {
+        maxPoints: 2,
         traceWidth: 1.0
       });
       drawWaveformOnCanvas('zoomWaveCanvas', [0, 1], {
+        maxPoints: 2,
         traceWidth: 1.0
       });
 
@@ -696,6 +803,16 @@ if ($_SESSION['loggedin'] !== true) {
 
       if (samples.length < 2) throw new Error('No samples in file');
 
+      console.log('Record debug:', {
+        recordId: recordId,
+        sampleRateHz: json?.payload?.sample_rate_hz,
+        intervalUs: json?.payload?.interval_us,
+        intervalMs: json?.payload?.interval_ms,
+        sampleCount: samples.length,
+        fs: fs,
+        durationSec: fs ? (samples.length / fs) : null
+      });
+
       ecgState.recordId = recordId;
       ecgState.rowMeta = rowMeta;
       ecgState.samples = samples;
@@ -709,32 +826,30 @@ if ($_SESSION['loggedin'] !== true) {
       renderOverview();
       refreshZoomUi();
 
-      // ✅ NEW: USE DB HEART RATE (NOT JS COMPUTATION)
+      let hrText = 'HR: -- bpm';
       const hrBadge = document.getElementById('hrBadge');
-      const hrValue = rowMeta?.HeartRate ?? '';
-      const rateLabel = String(rowMeta?.RateLabel ?? '').toUpperCase();
-      const rhythmLabel = String(rowMeta?.RhythmLabel ?? '').toUpperCase();
-      const statusLabel = String(rowMeta?.Status ?? '').toUpperCase();
 
-      if (hrBadge) {
-        hrBadge.classList.remove('badge-gray', 'badge-green', 'badge-red');
-
-        if (String(hrValue).trim() !== '') {
-          hrBadge.textContent = `HR: ${hrValue} bpm`;
-
-          if (
-            statusLabel === 'ABNORMAL' ||
-            rhythmLabel === 'AFIB' ||
-            rateLabel === 'TACHYCARDIA' ||
-            rateLabel === 'BRADYCARDIA'
-          ) {
-            hrBadge.classList.add('badge-red');
-          } else {
-            hrBadge.classList.add('badge-green');
+      if (fs) {
+        const hr = estimateHeartRateBpm(samples, fs);
+        if (hr?.bpm) {
+          hrText = `HR: ${hr.bpm} bpm`;
+          if (hrBadge) {
+            hrBadge.classList.remove('badge-gray', 'badge-green', 'badge-red');
+            hrBadge.textContent = hrText;
+            hrBadge.classList.add(hr.bpm > 100 ? 'badge-red' : 'badge-green');
           }
         } else {
-          hrBadge.textContent = 'HR: -- bpm';
+          if (hrBadge) {
+            hrBadge.classList.remove('badge-green', 'badge-red');
+            hrBadge.classList.add('badge-gray');
+            hrBadge.textContent = hrText;
+          }
+        }
+      } else {
+        if (hrBadge) {
+          hrBadge.classList.remove('badge-green', 'badge-red');
           hrBadge.classList.add('badge-gray');
+          hrBadge.textContent = hrText;
         }
       }
     }

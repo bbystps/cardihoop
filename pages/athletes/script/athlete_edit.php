@@ -59,6 +59,7 @@
 
     // ----- EDIT CLICK -----
     $("#btnEditProfile").on("click", function() {
+      console.log("edit clicked");
       const dbId = this.dataset.dbId; // DB id from table row
       if (!dbId) {
         alert('No athlete selected.');

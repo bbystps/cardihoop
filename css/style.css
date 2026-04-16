@@ -252,6 +252,88 @@ body{
 .user-name{ font-weight: 800; font-size: 13px; }
 .user-role{ color: var(--muted); font-size: 12px; }
 
+/* USER DROPDOWN */
+.user-dropdown{
+  position: relative;
+}
+
+.user-chip-btn{
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+}
+
+.user-chip-btn:hover{
+  background: #f8fafc;
+}
+
+.user-caret{
+  margin-left: 8px;
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* remove default button look */
+button.user-chip{
+  appearance: none;
+  -webkit-appearance: none;
+  font: inherit;
+  color: inherit;
+}
+
+/* dropdown menu */
+.user-menu{
+  position: absolute;
+  top: calc(100% + 10px);
+  right: 0;
+  min-width: 180px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  padding: 8px;
+  display: none;
+  z-index: 200;
+}
+
+.user-dropdown.open .user-menu{
+  display: block;
+}
+
+.user-menu-item{
+  display: block;
+  padding: 10px 12px;
+  border-radius: 10px;
+  color: var(--text);
+  text-decoration: none;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.user-menu-item:hover{
+  background: #f8fafc;
+}
+
+.user-menu-item-danger{
+  color: var(--danger);
+}
+
+.user-avatar{
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  display:grid;
+  place-items:center;
+  background: var(--primary-soft);
+  border: 1px solid #d6e6ff;
+}
+
+.avatar-icon{
+  width:18px;
+  height:18px;
+  fill: var(--primary);
+}
+
 /* GRID UTILS (still used for cards layout, not page layout) */
 .grid{
   display:grid;
@@ -531,7 +613,7 @@ body{
 /* Wave placeholder */
 .wavebox{
   margin-top: 10px;
-  height: 240px;
+  height: 300px;
   border-radius: 16px;
   border: 1px solid #e7edf5;
   background:
@@ -558,7 +640,11 @@ body{
   align-items:center;
   gap: 8px;
 }
-
+.wavebox canvas{
+  width: 100% !important;
+  height: 100% !important;
+  display: block;
+}
 .dot{
   width: 10px;
   height: 10px;
@@ -821,4 +907,94 @@ body{
   .record-detail .detail-grid{
     grid-template-columns: 1fr;
   }
+}
+
+
+/* collpasible sidebard */
+/* ================================
+   COLLAPSIBLE SIDEBAR
+   ================================ */
+
+/* default widths (matches your current) */
+:root{
+  --sidebar-w: 280px;
+  --sidebar-collapsed-w: 84px;
+}
+
+/* use variables so main margin follows sidebar width */
+.sidebar{
+  width: var(--sidebar-w);
+  transition: width 220ms ease;
+}
+
+.main{
+  margin-left: var(--sidebar-w);
+  transition: margin-left 220ms ease;
+}
+
+/* collapsed state */
+.app.is-collapsed .sidebar{
+  width: var(--sidebar-collapsed-w);
+}
+
+.app.is-collapsed .main{
+  margin-left: var(--sidebar-collapsed-w);
+}
+
+/* hide text labels when collapsed */
+.app.is-collapsed .brand-text,
+.app.is-collapsed .nav-item span:not(.nav-icon),
+.app.is-collapsed .helper-card .helper-title,
+.app.is-collapsed .helper-card .helper-text,
+.app.is-collapsed .btn-danger span:not(.btn-icon){
+  display: none;
+}
+
+/* keep icons centered in collapsed sidebar */
+.app.is-collapsed .nav-item{
+  justify-content: center;
+}
+
+.app.is-collapsed .brand{
+  justify-content: center;
+}
+
+.app.is-collapsed .brand-logo{
+  width: 44px;
+  height: 44px;
+}
+
+/* optional: tighten padding when collapsed */
+.app.is-collapsed .sidebar{
+  padding: 14px 10px;
+}
+
+/* Toggle button */
+.sidebar-toggle{
+  border: 1px solid var(--border);
+  background: #fff;
+  border-radius: 12px;
+  padding: 10px 12px;
+  cursor: pointer;
+  font-weight: 900;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.sidebar-toggle:hover{
+  filter: brightness(0.98);
+}
+
+/* Place toggle nicely in topbar-left row */
+.topbar-left{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+/* Tablet/mobile: your sidebar becomes top section; collapse is not needed */
+@media (max-width: 1100px){
+  .main{ margin-left: 0 !important; }
+  .sidebar{ width: 100% !important; }
 }

@@ -1,6 +1,5 @@
 <script>
   let scanRecordsTable = null;
-
   $(function() {
     window.scanRecordsTable = $('#scanRecordsTable').DataTable({
       ajax: {
@@ -9,7 +8,7 @@
       },
       columns: [{
           data: 'ID'
-        },
+        }, // hidden
         {
           data: 'RecordID'
         },
@@ -23,29 +22,17 @@
           data: 'Timestamp'
         },
         {
-          data: 'HeartRate'
-        },
-        {
-          data: 'RateLabel'
-        },
-        {
-          data: 'RhythmLabel'
-        },
-        {
           data: 'Status',
-          render: function(data, type, row) {
+          render: function(data, type) {
             if (type !== 'display') return data;
-
-            const status = String(data || '').trim().toUpperCase();
-
-            return status === 'NORMAL' ?
+            return data === 'Normal' ?
               '<span class="badge badge-green">Normal</span>' :
               '<span class="badge badge-red">Abnormal</span>';
           }
         }
       ],
       columnDefs: [{
-          targets: [0, 6, 7],
+          targets: [0], // Hide ID and RecordID columns
           visible: false
         },
         {
@@ -64,13 +51,11 @@
       paging: true,
       pageLength: 5,
       lengthMenu: [5, 10, 25, 50],
-      searching: true
+      searching: true,
     });
 
     function adjustTable() {
-      if (window.scanRecordsTable) {
-        window.scanRecordsTable.columns.adjust().draw(false);
-      }
+      window.scanRecordsTable.columns.adjust().draw(false);
     }
 
     window.addEventListener('resize', adjustTable);

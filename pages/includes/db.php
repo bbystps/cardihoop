@@ -3,7 +3,7 @@
 $host    = 'localhost';
 $db      = 'cardihoop';
 $user    = 'root';
-$pass    = '';
+$pass    = 'Password123!';
 $charset = 'utf8mb4';
 
 $dsn = "mysql:host=$host;dbname=$db;charset=$charset";

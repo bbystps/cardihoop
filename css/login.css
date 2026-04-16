@@ -80,11 +80,18 @@
 }
 
 /* subtle subtitle if you want later */
-.login-subtitle{
+/* .login-subtitle{
   color: var(--muted);
   font-size: 13px;
   margin-top: -6px;
   margin-bottom: 14px;
+} */
+.login-subtitle{
+  color: var(--muted);
+  font-size: 13px;
+  margin-top: -4px;
+  margin-bottom: 14px;
+  line-height: 1.5;
 }
 
 /* form spacing */

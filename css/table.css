@@ -60,3 +60,38 @@ table.dataTable tbody td{
 table.dataTable tbody tr:hover{
   background: #f8fafc !important;
 }
+
+/* Highlight selected DataTable row */
+#scanRecordsTable tbody tr.row-selected td {
+  background: rgba(0, 255, 160, 0.10) !important;
+}
+
+/* Above-graph selected record bar */
+.selected-record-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  background: rgba(11,18,32,0.55);
+  margin-bottom: 10px;
+}
+
+.selected-record-title {
+  font-weight: 700;
+  font-size: 14px;
+  color: rgba(255,255,255,0.92);
+}
+
+.selected-record-sub {
+  margin-top: 2px;
+  color: rgba(255,255,255,0.92);
+}
+
+/* Optional gray badge if you don't have one yet */
+.badge-gray {
+  background: rgba(255,255,255,0.12);
+  color: rgba(255,255,255,0.85);
+}
